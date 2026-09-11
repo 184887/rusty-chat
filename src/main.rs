@@ -1,13 +1,12 @@
-use tokio::net::TcpListener;
-use axum::{Router, routing::get}; 
-use tower_http::services::ServeDir;
-use axum::extract::ws::{Message,WebSocket, WebSocketUpgrade};
-use axum::response::Response;
-use std::sync::Arc;
-use tokio::sync::broadcast;
 use axum::extract::State;
+use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
+use axum::response::Response;
+use axum::{Router, routing::get};
 use futures::{SinkExt, StreamExt};
-
+use std::sync::Arc;
+use tokio::net::TcpListener;
+use tokio::sync::broadcast;
+use tower_http::services::ServeDir;
 
 struct AppState {
     tx: broadcast::Sender<String>,
@@ -17,41 +16,40 @@ async fn hello() -> &'static str {
     "Hello, World!"
 }
 
-async fn ws_handler(ws: WebSocketUpgrade,
-    State(state): State<Arc<AppState>>) ->  Response {
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>) -> Response {
     // Handle WebSocket connections here
     ws.on_upgrade(move |socket| handle_socket(socket, state))
-    
-} 
+}
 
 async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
-    
     let (mut sender, mut receiver) = socket.split();
     let mut rx = state.tx.subscribe();
-     loop {
-    tokio::select! {
-        msg = receiver.next() => {
-            // fra klienten
-             match msg {
-            Some(Ok(Message::Text(text))) => {
-            let _ = state.tx.send(text.to_string());
+    loop {
+        tokio::select! {
+            msg = receiver.next() => {
+                // fra klienten
+                 match msg {
+                Some(Ok(Message::Text(text))) => {
+                    println!("Motokk: {text}");
+                let _ = state.tx.send(text.to_string());
+            }
+            _ => break,
         }
-        _ => break,
-    }
+            }
+            msg = rx.recv() => {
+                // fra kanalen
+                  match msg {
+            Ok(text) => {
+                if sender.send(Message::Text(text.into())).await.is_err() {
+                    break;
+                }
+            }
+            Err(_) => break,
         }
-        msg = rx.recv() => {
-            // fra kanalen
-              match msg {
-        Ok(text) => {
-            if sender.send(Message::Text(text.into())).await.is_err() {
-                break;
             }
         }
-        Err(_) => break,
     }
-        }
-    }
-     }}
+}
 
 #[tokio::main]
 async fn main() {
@@ -65,10 +63,7 @@ async fn main() {
         .route("/ws", get(ws_handler))
         .fallback_service(ServeDir::new("static"))
         .with_state(state);
-    
 
     println!("lytter på http://{addr}");
-    axum::serve(listener, app).await.unwrap(); 
-
+    axum::serve(listener, app).await.unwrap();
 }
-
