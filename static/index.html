@@ -1,1 +1,21 @@
+<link rel="stylesheet" href="style.css">
+<script defer src = "app.js"></script>
+
 <h1>Welcome to the Rusty Chat</h1>
+
+
+
+<div id="join">
+<h3>Join the conversation</h3>
+<input type="text" id="username" placeholder="Enter your username">
+<button onclick="JoinChat()">Send</button>
+</div>
+
+<div id="chat" style="display: none;">
+    <h3>Chat</h3>
+    <div id="messages"></div>
+    <input type="text" id="message" placeholder="Enter your message">
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+
