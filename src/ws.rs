@@ -25,6 +25,11 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
         _ => return,
     };
 
+    let room = room.trim().to_string();
+    if room.is_empty() {
+    return;
+}
+
     let tx = {
         let mut rooms = state.rooms.lock().unwrap();
         rooms

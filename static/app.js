@@ -2,8 +2,8 @@ const joinDiv = document.getElementById("join");
 const chatDiv = document.getElementById("chat");
 
 function JoinChat() {
-  const username = document.getElementById("username").value;
-  const room = document.getElementById("room").value;
+  const username = document.getElementById("username").value.trim();
+  const room = document.getElementById("room").value.trim();
   if (username && room) {
     ws.send(JSON.stringify({ type: "join", username, room }));
     chatDiv.style.display = "block";
