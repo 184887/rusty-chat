@@ -30,40 +30,45 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
 
     loop {
         tokio::select! {
-            msg = receiver.next() => {
-                match msg {
-                    Some(Ok(Message::Text(text))) => {
-                        match serde_json::from_str::<ClientMessage>(&text) {
-                            Ok(ClientMessage::Join { username: name }) => {
-                                username = Some(name.clone());
-                                let _ = state.tx.send(ServerMessage::UserJoined { username: name });
-                            }
-                            Ok(ClientMessage::Chat { text }) => {
-                                if let Some(name) = &username {
-                                    let _ = state.tx.send(ServerMessage::Chat {
-                                        username: name.clone(),
-                                        text,
-                                    });
-                                }
-                            }
-                            Err(_) => {}
+        msg = receiver.next() => {
+            match msg {
+                Some(Ok(Message::Text(text))) => {
+                    match serde_json::from_str::<ClientMessage>(&text) {
+                        Ok(ClientMessage::Join { username: name }) => {
+                            username = Some(name.clone());
+                            let _ = state.tx.send(ServerMessage::UserJoined { username: name });
                         }
-                    }
-                    _ => break,
-                }
-            }
-            msg = rx.recv() => {
-                match msg {
-                    Ok(msg) => {
-                        let json = serde_json::to_string(&msg).unwrap();
-                        if sender.send(Message::Text(json.into())).await.is_err() {
-                            break;
+                        Ok(ClientMessage::Chat { text }) => {
+                            if let Some(name) = &username {
+                                let _ = state.tx.send(ServerMessage::Chat {
+                                    username: name.clone(),
+                                    text,
+                                });
+                            }
                         }
+                        Err(_) => {}
                     }
-                    Err(_) => break,
                 }
+                _ => break,
             }
         }
+        msg = rx.recv() => {
+            match msg {
+                Ok(msg) => {
+                    let json = serde_json::to_string(&msg).unwrap();
+                    if sender.send(Message::Text(json.into())).await.is_err() {
+                        break;
+                    }
+                }
+                Err(broadcast::error::RecvError::Lagged(_) ) => continue,
+                Err(broadcast::error::RecvError::Closed) => break,
+            }
+        }
+        }
+    }
+
+    if let Some(name) = username {
+        let _ = state.tx.send(ServerMessage::UserLeft { username: name });
     }
 }
 
