@@ -1,103 +1,76 @@
-* {
-	box-sizing: border-box;
-}
-
-/* For testing. */
-
-:root {
-	font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	color: #e5e7eb;
-	background: #111827;
-}
+* { box-sizing: border-box; }
 
 body {
-	margin: 0;
-	min-height: 100vh;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background: #111827;
+  margin: 0;
+  min-height: 100vh;
+  padding: 3rem 1rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #e5e7eb;
+  background: #111827;
 }
 
-main,
-.chat,
-.container {
-	width: min(100%, 860px);
-	padding: 2rem 1rem;
+h1 {
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+  font-size: 1.5rem;
+  color: #f9fafb;
 }
 
-h1,
-h2,
 h3 {
-	margin-top: 0;
-	color: #f9fafb;
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #f9fafb;
 }
 
-form {
-	display: flex;
-	gap: .75rem;
-	margin-top: 1rem;
+#join, #chat {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  background: #1f2937;
 }
 
-input,
-textarea,
+#messages {
+  height: 340px;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  overflow-y: auto;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  background: #111827;
+}
+
+#messages div {
+  padding: 0.3rem 0;
+  line-height: 1.5;
+}
+
+input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  margin-bottom: 0.75rem;
+  color: #f9fafb;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  font: inherit;
+}
+
+input:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
 button {
-	border: 1px solid #374151;
-	border-radius: .6rem;
-	font: inherit;
+  padding: 0.7rem 1.25rem;
+  color: #fff;
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
 }
 
-input,
-textarea {
-	width: 100%;
-	padding: .75rem .9rem;
-	color: #f9fafb;
-	background: #1f2937;
-	outline: none;
-}
-
-input:focus,
-textarea:focus {
-	border-color: #60a5fa;
-	box-shadow: 0 0 0 3px #60a5fa33;
-}
-
-button {
-	padding: .75rem 1.1rem;
-	color: #fff;
-	background: #2563eb;
-	cursor: pointer;
-	transition: background .2s ease;
-}
-
-button:hover {
-	background: #1d4ed8;
-}
-
-ul {
-	padding: 0;
-	list-style: none;
-}
-
-li,
-.message {
-	margin: .75rem 0;
-	padding: .9rem 1rem;
-	border: 1px solid #374151;
-	border-radius: .75rem;
-	background: #1f2937;
-}
-
-@media (max-width: 560px) {
-	main,
-	.chat,
-	.container {
-		padding: 1rem;
-	}
-
-	form {
-		flex-direction: column;
-	}
-}
-
-
+button:hover { background: #1d4ed8; }
