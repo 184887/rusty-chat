@@ -1,6 +1,8 @@
 use crate::protocol::ServerMessage;
+use std::collections::HashMap;
+use std::sync::Mutex;
 use tokio::sync::broadcast;
 
 pub struct AppState {
-    pub tx: broadcast::Sender<ServerMessage>,
+    pub rooms: Mutex<HashMap<String, broadcast::Sender<ServerMessage>>>,
 }

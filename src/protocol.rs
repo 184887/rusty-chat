@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ClientMessage {
-    Join { username: String },
+    Join { username: String, room: String },
     Chat { text: String },
 }
 
