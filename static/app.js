@@ -3,10 +3,13 @@ const chatDiv = document.getElementById("chat");
 
 function JoinChat() {
   const username = document.getElementById("username").value;
-  if (username) {
-    ws.send(JSON.stringify({ type: "join", username }));
+  const room = document.getElementById("room").value;
+  if (username && room) {
+    ws.send(JSON.stringify({ type: "join", username, room }));
     chatDiv.style.display = "block";
     joinDiv.style.display = "none";
+  } else {
+    alert("Fyll inn både brukernavn og rom.");
   }
 }
 
@@ -22,10 +25,13 @@ function sendMessage() {
 function addLine(text) {
   const box = document.getElementById("messages");
   const div = document.createElement("div");
+  const room = document.getElementById("room").value;
   div.textContent = text;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
+
+
 
 const ws = new WebSocket(`ws://${location.host}/ws`);
 
