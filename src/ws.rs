@@ -1,9 +1,12 @@
 use axum::extract::State;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
+use axum::middleware::map_response_with_state;
 use axum::response::Response;
+use axum::routing;
 use futures::{SinkExt, StreamExt};
 use std::sync::Arc;
 use tokio::sync::broadcast;
+use sqlx::Row;
 
 use crate::protocol::{ClientMessage, ServerMessage};
 use crate::state::AppState;
@@ -38,6 +41,20 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
             .clone()
     };
     let mut rx = tx.subscribe();
+    let row = sqlx::query("SELECT username, text FROM messages WHERE room = ? ORDER BY id DESC LIMIT 50")
+        .bind(&room)
+        .fetch_all(&state.db)
+        .await
+        .unwrap_or_default();
+    let mut history: Vec<ServerMessage> = row
+        .iter()
+        .map(|row|ServerMessage::Chat { username: row.get("username"), text: row.get("text") })
+        .collect();
+
+    history.reverse();
+
+    let json = serde_json::to_string(&ServerMessage::History {  messages: history  }).unwrap();
+    let _ = sender.send(Message::Text(json.into())).await;
     let _ = tx.send(ServerMessage::UserJoined {
         username: username.clone(),
     });
@@ -49,6 +66,19 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
                     Some(Ok(Message::Text(text))) => {
                         match serde_json::from_str::<ClientMessage>(&text) {
                             Ok(ClientMessage::Chat { text }) => {
+                                let now = std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap()
+                                    .as_secs() as i64; 
+                                let _ = sqlx::query(
+                                    "INSERT INTO messages (room, username, text, created_at) VALUES (?, ?, ?, ?)"
+                                ).bind(&room)
+                                .bind(&username)
+                                .bind(&text)
+                                .bind(now)
+                                .execute(&state.db)
+                                .await; 
+
                                 let _ = tx.send(ServerMessage::Chat {
                                     username: username.clone(),
                                     text,

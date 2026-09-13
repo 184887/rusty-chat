@@ -13,4 +13,5 @@ pub enum ServerMessage {
     Chat { username: String, text: String },
     UserJoined { username: String },
     UserLeft { username: String },
+    History { messages: Vec<ServerMessage> },
 }
