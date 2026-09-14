@@ -31,8 +31,6 @@ function addLine(text) {
   box.scrollTop = box.scrollHeight;
 }
 
-
-
 const ws = new WebSocket(`ws://${location.host}/ws`);
 
 ws.onopen = () => {
@@ -50,8 +48,9 @@ ws.onerror = (error) => {
 ws.onmessage = (event) => {
   const msg = JSON.parse(event.data);
   switch (msg.type) {
-    default:
-      console.warn("ukjent meldingstype:", msg);
+    case "history":
+      msg.messages.forEach((m) => addLine(`${m.username}: ${m.text}`));
+      break;
     case "chat":
       addLine(`${msg.username}: ${msg.text}`);
       break;
@@ -60,6 +59,9 @@ ws.onmessage = (event) => {
       break;
     case "userLeft":
       addLine(`${msg.username} dro`);
+      break;
+    default:
+      console.warn("ukjent meldingstype:", msg);
       break;
   }
 };
